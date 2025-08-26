@@ -11,7 +11,7 @@ class StrokeInput(BaseModel):
     gender: Literal["Male", "Female", "Other"]
     ever_married: Literal["Yes", "No"]
     work_type: Literal["children", "Govt_job", "Never_worked", "Private", "Self-employed"]
-    residence_type: Literal["Urban", "Rural"]
+    Residence_type: Literal["Urban", "Rural"]
     smoking_status: Literal["formerly smoked", "never smoked", "smokes", "Unknown"]
 
 class StrokeOutput(BaseModel):
