@@ -1,0 +1,12 @@
+pandas
+numpy
+scikit-learn
+matplotlib
+seaborn
+imblearn
+joblib
+fastapi
+uvicorn[standard]
+pytest
+pydantic==2.11.7
+typing

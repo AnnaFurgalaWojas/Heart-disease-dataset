@@ -1,0 +1,18 @@
+from pydantic import BaseModel
+from typing import Literal
+
+class StrokeInput(BaseModel):
+    age: int  # Age of patient
+    hypertension: int  # 0 = No , 1 = Appears
+    heart_disease: int  # 0 = No heart disease 1 = Apears
+    avg_glucose_level: float  # AVG glucose level in blood
+    bmi: float  # Body Mass Index
+
+    gender: Literal["Male", "Female", "Other"]
+    ever_married: Literal["Yes", "No"]
+    work_type: Literal["children", "Govt_job", "Never_worked", "Private", "Self-employed"]
+    residence_type: Literal["Urban", "Rural"]
+    smoking_status: Literal["formerly smoked", "never smoked", "smokes", "Unknown"]
+
+class StrokeOutput(BaseModel):
+    stroke: int  # 0 = No stroke, 1 = Appears
