@@ -20,7 +20,10 @@ def predict(input_data: StrokeInput):
     # Zamiana danych wejściowych z Pydantic na DataFrame
     df = pd.DataFrame([input_data.dict()])
 
-    # Predykcja
-    prediction = predict_stroke(df)
+    # Ustawiamy dokładną kolejność kolumn
+    df = df[feature_order]
 
-    return {"stroke": int(prediction[0])}  # 0 lub 1
+    # Predykcja
+    prediction = model.predict(df)
+
+    return {"stroke": int(prediction[0])}

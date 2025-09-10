@@ -1,8 +1,8 @@
 import pandas as pd
 import joblib
 
-# 1️⃣ Załaduj wytrenowany model
-model = joblib.load("Selected_model.pkl")
+# 1️⃣ Załaduj wytrenowany mod
+model, feature_order = joblib.load("Selected_model.pkl")
 
 # 2️⃣ Pobierz dokładne kolumny użyte podczas trenowania
 MODEL_COLUMNS = model.feature_names_in_
