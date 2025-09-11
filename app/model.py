@@ -1,61 +1,40 @@
 import pandas as pd
 import joblib
 
-# 1️⃣ Załaduj wytrenowany mod
+# wczytanie modelu i kolejności kolumn
 model, feature_order = joblib.load("Selected_model.pkl")
 
-# 2️⃣ Pobierz dokładne kolumny użyte podczas trenowania
-MODEL_COLUMNS = model.feature_names_in_
-
-# 3️⃣ Funkcja preprocess_input
 def preprocess_input(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Zamienia dane wejściowe na format zgodny z treningiem:
+    - one-hot encoding dla kolumn kategorycznych
+    - dodanie brakujących kolumn z zerami
+    - ustawienie kolumn w kolejności feature_order
+    """
+    df_processed = pd.get_dummies(
+        df,
+        columns=["gender", "ever_married", "work_type", "Residence_type", "smoking_status"],
+        dtype=int
+    )
 
+    # dodaj brakujące kolumny
+    for col in feature_order:
+        if col not in df_processed:
+            df_processed[col] = 0
 
-    # One-hot encoding
-    df_encoded = pd.get_dummies(df)
+    # ustaw kolejność kolumn
+    df_processed = df_processed[feature_order]
 
-    # Dopasowanie nazwy kolumny residence_type do liter w modelu
-    if "residence_type" in df.columns:
-        df_encoded.rename(columns={
-            "residence_type_Rural": "Residence_type_Rural",
-            "residence_type_Urban": "Residence_type_Urban"
-        }, inplace=True)
+    return df_processed
 
-    # Dodaj brakujące kolumny zerami
-    for col in MODEL_COLUMNS:
-        if col not in df_encoded.columns:
-            df_encoded[col] = 0
-
-    # Ustaw kolejność kolumn zgodnie z model.columns
-    df_encoded = df_encoded[MODEL_COLUMNS]
-
-    # Wszystkie kolumny jako int (0/1)
-    df_encoded = df_encoded.astype(int)
-
-    return df_encoded
-
-# 4️⃣ Funkcja predykcji
 def predict_stroke(df: pd.DataFrame):
-    df_preprocessed = preprocess_input(df)
-    prob = model.predict_proba(df_preprocessed)[:, 1]  # prawdopodobieństwo klasy 1
-    return prob
+    df_prepared = preprocess_input(df)
+    return model.predict(df_prepared)
 
-# 5️⃣ Test predykcji
-if __name__ == "__main__":
-    test_data = {
-        "age": 42,
-        "hypertension": 0,
-        "heart_disease": 0,
-        "avg_glucose_level": 70,
-        "bmi": 22,
-        "gender": "Male",
-        "ever_married": "Yes",
-        "work_type": "Govt_job",
-        "residence_type": "Urban",
-        "smoking_status": "smokes"
-    }
 
-    df = pd.DataFrame([test_data])
 
-    prob = predict_stroke(df)
-    print("Prawdopodobieństwo udaru:", prob[0])
+
+#['age', 'hypertension', 'heart_disease', 'avg_glucose_level', 'bmi', 'gender_Female', 'gender_Male', 
+ #'gender_Other', 'ever_married_No', 'ever_married_Yes', 'work_type_Govt_job', 'work_type_Never_worked', 
+ #'work_type_Private', 'work_type_Self-employed', 'work_type_children', 'Residence_type_Rural', 'Residence_type_Urban',
+ #  'smoking_status_Unknown', 'smoking_status_formerly smoked', 'smoking_status_never smoked', 'smoking_status_smokes']

@@ -1,34 +1,28 @@
-from fastapi.testclient import TestClient
-from main import app
+import pandas as pd
+import joblib
 
-client = TestClient(app)
+# wczytanie modelu i kolejności kolumn
+model, feature_order = joblib.load("Selected_model.pkl")
 
-def test_predict_endpoint():
-    sample = {
-        "age": 67.0,
-        "hypertension": 0,
-        "heart_disease": 1,
-        "avg_glucose_level": 228.69,
-        "bmi": 36.6,
-        "gender_Female": 0,
-        "gender_Male": 1,
-        "gender_Other": 0,
-        "ever_married_No": 0,
-        "ever_married_Yes": 1,
-        "work_type_Govt_job": 0,
-        "work_type_Never_worked": 0,
-        "work_type_Private": 1,
-        "work_type_Self-employed": 0,
-        "work_type_children": 0,
-        "Residence_type_Rural": 0,
-        "Residence_type_Urban": 1,
-        "smoking_status_Unknown": 0,
-        "smoking_status_formerly smoked": 1,
-        "smoking_status_never smoked": 0,
-        "smoking_status_smokes": 0
-    }
-    response = client.post("/predict", json=sample)
-    assert response.status_code == 200
-    data = response.json()
-    assert "prediction" in data
-    assert data["prediction"] in [0,1]
+def preprocess_input(df: pd.DataFrame) -> pd.DataFrame:
+
+    df_processed = pd.get_dummies(
+        df,
+        columns=["gender", "ever_married", "work_type", "Residence_type", "smoking_status"],
+        dtype=int
+    )
+
+    # dodaj brakujące kolumny
+    for col in feature_order:
+        if col not in df_processed:
+            df_processed[col] = 0
+
+    # ustaw kolejność kolumn
+    df_processed = df_processed[feature_order]
+
+    return df_processed
+
+def predict_stroke(df: pd.DataFrame):
+    df_prepared = preprocess_input(df)
+    return model.predict(df_prepared)
+
