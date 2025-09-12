@@ -27,6 +27,20 @@ def test_single_prediction():
     pred = model.predict(X)
     assert pred[0] in [0, 1]
 
+def test_single_prediction2():
+    df = pd.DataFrame([{
+        "age": 65.5008913418924,
+        "hypertension": 0,
+        "heart_disease": 0,
+        "avg_glucose_level": 101.21541893068942,
+        "bmi": 28.95133701283859,
+        "gender": "Female",
+        "ever_married": "Yes"
+    }])
+    X = preprocess_input(df)
+    pred = model.predict(X)
+    assert pred[0] == 1
+
 """def test_model_quality_on_sample():
     df = pd.read_csv("data/test_sample.csv")
     X, y = df.drop("stroke", axis=1), df["stroke"]

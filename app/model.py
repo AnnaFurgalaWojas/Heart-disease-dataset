@@ -11,11 +11,15 @@ def preprocess_input(df: pd.DataFrame) -> pd.DataFrame:
     - dodanie brakujących kolumn z zerami
     - ustawienie kolumn w kolejności feature_order
     """
+    df = df.reset_index(drop=True)  # reset indeksu na początku
+
     df_processed = pd.get_dummies(
         df,
         columns=["gender", "ever_married", "work_type", "Residence_type", "smoking_status"],
         dtype=int
     )
+
+    df_processed = df_processed.reset_index(drop=True)  # reset indeksu po OHE
 
     # dodaj brakujące kolumny
     for col in feature_order:
@@ -28,8 +32,12 @@ def preprocess_input(df: pd.DataFrame) -> pd.DataFrame:
     return df_processed
 
 def predict_stroke(df: pd.DataFrame):
+    """
+    Przyjmuje DataFrame i zwraca predykcję modelu
+    """
     df_prepared = preprocess_input(df)
     return model.predict(df_prepared)
+
 
 
 
