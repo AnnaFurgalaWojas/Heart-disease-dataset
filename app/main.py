@@ -17,9 +17,17 @@ def read_root():
 # Endpoint predykcji
 @app.post("/predict", response_model=StrokeOutput)
 def predict(input_data: StrokeInput):
-    # Zamiana danych wejściowych z Pydantic na DataFrame
+    """
+    Przyjmuje dane pacjenta w formacie Pydantic i zwraca predykcję 0/1
+    """
+    # Konwersja danych wejściowych do DataFrame
     df = pd.DataFrame([input_data.dict()])
 
     # Predykcja
-    prediction = predict_stroke(df)
-    return {"stroke": int(prediction[0])}
+    try:
+        prediction = predict_stroke(df)
+        stroke_result = int(prediction[0])
+    except Exception as e:
+        return {"stroke": None, "error": str(e)}
+
+    return {"stroke": stroke_result}

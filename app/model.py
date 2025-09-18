@@ -1,46 +1,63 @@
 import pandas as pd
 import joblib
+import numpy as np
 
-# wczytanie modelu i kolejności kolumn
-model, feature_order = joblib.load("Selected_model.pkl")
+# Wczytanie wytrenowanego modelu CatBoost, listy kolumn i threshold
+cat_model, feature_order, threshold = joblib.load("Selected_model.pkl")
 
 def preprocess_input(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Zamienia dane wejściowe na format zgodny z treningiem:
-    - one-hot encoding dla kolumn kategorycznych
+    Przygotowanie danych wejściowych:
+    - one-hot encoding dla zmiennych kategorycznych
     - dodanie brakujących kolumn z zerami
     - ustawienie kolumn w kolejności feature_order
     """
-    df = df.reset_index(drop=True)  # reset indeksu na początku
-
     df_processed = pd.get_dummies(
         df,
         columns=["gender", "ever_married", "work_type", "Residence_type", "smoking_status"],
         dtype=int
     )
 
-    df_processed = df_processed.reset_index(drop=True)  # reset indeksu po OHE
-
-    # dodaj brakujące kolumny
+    # Dodanie brakujących kolumn
     for col in feature_order:
-        if col not in df_processed:
+        if col not in df_processed.columns:
             df_processed[col] = 0
 
-    # ustaw kolejność kolumn
+    # Ustawienie kolejności kolumn
     df_processed = df_processed[feature_order]
 
     return df_processed
 
-def predict_stroke(df: pd.DataFrame):
+def predict_stroke(df: pd.DataFrame) -> np.ndarray:
     """
-    Przyjmuje DataFrame i zwraca predykcję modelu
+    Zwraca predykcję 0/1 na podstawie modelu i threshold
     """
-    df_prepared = preprocess_input(df)
-    return model.predict(df_prepared)
+    df_ready = preprocess_input(df)
+    y_prob = cat_model.predict_proba(df_ready)[:, 1]
+    y_pred = (y_prob > threshold).astype(int)
+    return y_pred
 
 
+# przykładowe dane wejściowe
+data_dict = {
+    "age": [95],
+    "hypertension": [1],
+    "heart_disease": [1],
+    "avg_glucose_level": [205.5],
+    "bmi": [40.3],
+    "gender": ["Female"],
+    "ever_married": ["Yes"],
+    "work_type": ["Private"],
+    "Residence_type": ["Urban"],
+    "smoking_status": ["never smoked"]
+}
 
+df = pd.DataFrame(data_dict)
 
+# teraz df jest zdefiniowane
+df_ready = preprocess_input(df)
+y_prob = cat_model.predict_proba(df_ready)[:,1]
+print(y_prob)
 
 #['age', 'hypertension', 'heart_disease', 'avg_glucose_level', 'bmi', 'gender_Female', 'gender_Male', 
  #'gender_Other', 'ever_married_No', 'ever_married_Yes', 'work_type_Govt_job', 'work_type_Never_worked', 
