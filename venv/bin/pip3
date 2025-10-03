@@ -1,4 +1,4 @@
-#!/Users/annafurgala-wojas/New_project/Heart-disease-dataset/venv/bin/python3
+#!/Users/annafurgala-wojas/Projects/Heart-disease-dataset/venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys

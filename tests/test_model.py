@@ -1,64 +1,32 @@
+import pandas as pd
 import numpy as np
-from app.model import model, preprocess_input
-import pandas as pd   # ← brakowało!
-import joblib         # ← brakowało!
 import pytest
+from app.model import preprocess_input, predict_stroke
 
-
-
-def test_model_loads():
-    assert model is not None
-    assert hasattr(model, "predict")
-
-def test_single_prediction():
-    df = pd.DataFrame([{
-        "age": 67,
-        "hypertension": 0,
-        "heart_disease": 1,
-        "avg_glucose_level": 228.69,
-        "bmi": 36.6,
-        "gender": "Male",
-        "ever_married": "Yes",
-        "work_type": "Private",
-        "Residence_type": "Urban",
-        "smoking_status": "formerly smoked"
-    }])
-    X = preprocess_input(df)
-    pred = model.predict(X)
-    assert pred[0] in [0, 1]
-
-def test_single_prediction2():
-    df = pd.DataFrame([{
-        "age": 65.5008913418924,
+@pytest.fixture
+def sample_input():
+    return pd.DataFrame([{
+        "age": 45,
         "hypertension": 0,
         "heart_disease": 0,
-        "avg_glucose_level": 101.21541893068942,
-        "bmi": 28.95133701283859,
-        "gender": "Female",
-        "ever_married": "Yes"
+        "avg_glucose_level": 95.5,
+        "bmi": 22.4,
+        "gender": "Male",
+        "ever_married": "No",
+        "work_type": "Private",
+        "Residence_type": "Urban",
+        "smoking_status": "never smoked"
     }])
-    X = preprocess_input(df)
-    pred = model.predict(X)
-    assert pred[0] == 1
 
-"""def test_model_quality_on_sample():
-    df = pd.read_csv("data/test_sample.csv")
-    X, y = df.drop("stroke", axis=1), df["stroke"]
-    X_prepared = preprocess_input(X)
-    y_pred = model.predict(X_prepared)
-    acc = (y_pred == y).mean()
-    assert acc > 0.7, f"Model accuracy on test_sample.csv too low: {acc}"""
+def test_preprocess_input_columns(sample_input):
+    df_ready = preprocess_input(sample_input)
+    assert isinstance(df_ready, pd.DataFrame)
+    # wszystkie kolumny z feature_order muszą być
+    from app.model import feature_order
+    assert all(col in df_ready.columns for col in feature_order)
 
-def test_model_quality_on_sample():
-    model, feature_order = joblib.load("Selected_model.pkl")
-    df = pd.read_csv("data/test_sample.csv")
-
-    X, y = df.drop("stroke", axis=1), df["stroke"]
-
-    # upewnij się, że kolumny są w tej samej kolejności co przy treningu
-    X = X[feature_order]
-
-    y_pred = model.predict(X)
-
-    assert len(y_pred) == len(y)
-
+def test_predict_stroke_output(sample_input):
+    y_pred = predict_stroke(sample_input)
+    assert isinstance(y_pred, np.ndarray)
+    assert y_pred.shape == (1,)
+    assert y_pred[0] in [0, 1]

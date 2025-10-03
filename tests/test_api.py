@@ -1,28 +1,40 @@
-import pandas as pd
-import joblib
+import pytest
+from fastapi.testclient import TestClient
+from app.main import app
 
-# wczytanie modelu i kolejności kolumn
-model, feature_order = joblib.load("Selected_model.pkl")
+client = TestClient(app)
 
-def preprocess_input(df: pd.DataFrame) -> pd.DataFrame:
+def test_root_endpoint():
+    response = client.get("/")
+    assert response.status_code == 200
+    assert response.json() == {"message": "Stroke Prediction API is working!"}
 
-    df_processed = pd.get_dummies(
-        df,
-        columns=["gender", "ever_married", "work_type", "Residence_type", "smoking_status"],
-        dtype=int
-    )
+def test_predict_valid_input():
+    payload = {
+        "age": 90,
+        "hypertension": 1,
+        "heart_disease": 0,
+        "avg_glucose_level": 220.5,
+        "bmi": 38.7,
+        "gender": "Female",
+        "ever_married": "Yes",
+        "work_type": "Private",
+        "Residence_type": "Urban",
+        "smoking_status": "never smoked"
+    }
+    response = client.post("/predict", json=payload)
+    assert response.status_code == 200
+    result = response.json()
+    assert "stroke" in result
+    assert result["stroke"] in [0, 1]
 
-    # dodaj brakujące kolumny
-    for col in feature_order:
-        if col not in df_processed:
-            df_processed[col] = 0
+def test_predict_invalid_input():
+    # brak pola wymagane przez Pydantic
+    payload = {
+        "age": 60,
+        "hypertension": 1
+    }
+    response = client.post("/predict", json=payload)
+    assert response.status_code == 422  # validation error
 
-    # ustaw kolejność kolumn
-    df_processed = df_processed[feature_order]
-
-    return df_processed
-
-def predict_stroke(df: pd.DataFrame):
-    df_prepared = preprocess_input(df)
-    return model.predict(df_prepared)
 
