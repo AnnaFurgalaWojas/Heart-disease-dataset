@@ -3,8 +3,13 @@ import joblib
 import pytest
 
 
-dataset_train = pd.read_csv('/Users/annafurgala-wojas/Projects/Heart-disease-dataset/data/train_data.csv')
-dataset_test = pd.read_csv('/Users/annafurgala-wojas/Projects/Heart-disease-dataset/data/test_data.csv')
+@pytest.fixture
+def dataset_train():
+    return pd.read_csv('/Users/annafurgala-wojas/Projects/Heart-disease-dataset/data/train_data.csv')
+
+@pytest.fixture
+def dataset_test():
+    return pd.read_csv('/Users/annafurgala-wojas/Projects/Heart-disease-dataset/data/test_data.csv')
 
 def test_missing_values(dataset_train):
     assert dataset_train.isnull().sum().sum() == 0, "There are missing values in the dataset."
@@ -26,7 +31,7 @@ def test_columns_types(dataset_train):
 
 def test_data_structure_in_columns(dataset_train):
     assert set(dataset_train['gender'].unique()).issubset({"Male", "Female", "Other"}), "Unexpected values in gender columns!"
-    assert set(dataset_train['ever married'].unique()).issubset({'Yes' ,'No'}), "Unexpected values in ever married columns!"
+    assert set(dataset_train['ever_married'].unique()).issubset({'Yes' ,'No'}), "Unexpected values in ever married columns!"
     assert set(dataset_train['work_type'].unique()).issubset({'Private','Self-employed' ,'Govt_job', 'children', 'Never_worked'}), "Unexpected values in work type columns!"
     assert set(dataset_train['Residence_type'].unique()).issubset({'Urban', 'Rural'}), "Unexpected values in Residence_type columns!"
     assert set(dataset_train['smoking_status'].unique()).issubset({'formerly smoked' ,'never smoked', 'smokes', 'Unknown'}), "Unexpected values in smoking_status columns!"

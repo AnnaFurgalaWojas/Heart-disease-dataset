@@ -9,25 +9,22 @@ app = FastAPI(
     version="1.0"
 )
 
-# Root endpoint
 @app.get("/")
 def read_root():
     return {"message": "Stroke Prediction API is working!"}
 
-# Endpoint predykcji
 @app.post("/predict", response_model=StrokeOutput)
 def predict(input_data: StrokeInput):
-    """
-    Przyjmuje dane pacjenta w formacie Pydantic i zwraca predykcję 0/1
-    """
-    # Konwersja danych wejściowych do DataFrame
+    # Konwersja inputu do DataFrame
     df = pd.DataFrame([input_data.dict()])
 
-    # Predykcja
     try:
         prediction = predict_stroke(df)
-        stroke_result = int(prediction[0])
+        # Z model.py dostajemy dict {"Probability": ..., "Prediction": ...}
+        stroke_result = prediction["Prediction"]
     except Exception as e:
-        return {"stroke": None, "error": str(e)}
+        # W przypadku błędu zwracamy None (opcjonalnie można też raise HTTPException)
+        return {"stroke": None}
 
     return {"stroke": stroke_result}
+
